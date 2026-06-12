@@ -199,20 +199,27 @@ class CoffeeTracker {
         this.updateWeeklyChart();
     }
 
+    calculateBarHeight(count, maxCount) {
+        // These percentage floors keep empty days visible and prevent very small non-zero values from disappearing.
+        const MIN_EMPTY_BAR_HEIGHT = 8;
+        const MIN_FILLED_BAR_HEIGHT = 18;
+
+        if (maxCount === 0) {
+            return MIN_EMPTY_BAR_HEIGHT;
+        }
+
+        return Math.max((count / maxCount) * 100, count > 0 ? MIN_FILLED_BAR_HEIGHT : MIN_EMPTY_BAR_HEIGHT);
+    }
+
     updateWeeklyChart() {
         const weeklyData = this.getLastSevenDaysData();
         const chart = document.getElementById('weeklyChart');
         const peak = document.getElementById('weeklyPeak');
-        // Keep empty bars visible and give non-zero values a readable minimum height.
-        const MIN_EMPTY_BAR_HEIGHT = 8;
-        const MIN_FILLED_BAR_HEIGHT = 18;
         const maxCount = Math.max(...weeklyData.map(day => day.count), 0);
         const peakDays = weeklyData.filter(day => day.count === maxCount && maxCount > 0);
 
         chart.innerHTML = weeklyData.map(day => {
-            const height = maxCount === 0
-                ? MIN_EMPTY_BAR_HEIGHT
-                : Math.max((day.count / maxCount) * 100, day.count > 0 ? MIN_FILLED_BAR_HEIGHT : MIN_EMPTY_BAR_HEIGHT);
+            const height = this.calculateBarHeight(day.count, maxCount);
 
             return `
                 <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}">
