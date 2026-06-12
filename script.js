@@ -203,6 +203,7 @@ class CoffeeTracker {
         const weeklyData = this.getLastSevenDaysData();
         const chart = document.getElementById('weeklyChart');
         const peak = document.getElementById('weeklyPeak');
+        // Keep empty bars visible and give non-zero values a readable minimum height.
         const MIN_EMPTY_BAR_HEIGHT = 8;
         const MIN_FILLED_BAR_HEIGHT = 18;
         const maxCount = Math.max(...weeklyData.map(day => day.count), 0);
@@ -214,7 +215,8 @@ class CoffeeTracker {
                 : Math.max((day.count / maxCount) * 100, day.count > 0 ? MIN_FILLED_BAR_HEIGHT : MIN_EMPTY_BAR_HEIGHT);
 
             return `
-                <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}" role="img" aria-label="${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}">
+                <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}">
+                    <span class="sr-only">${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}</span>
                     <span class="chart-value">${day.count}</span>
                     <div class="chart-bar-track">
                         <div class="chart-bar" style="height: ${height}%;"></div>
