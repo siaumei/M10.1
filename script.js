@@ -103,6 +103,29 @@ class CoffeeTracker {
         return this.coffeeData.filter(coffee => coffee.date === today);
     }
 
+    getLastSevenDaysData() {
+        const countsByDate = this.coffeeData.reduce((counts, coffee) => {
+            const dateKey = new Date(coffee.date).toDateString();
+            counts[dateKey] = (counts[dateKey] || 0) + 1;
+            return counts;
+        }, {});
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return Array.from({ length: 7 }, (_, index) => {
+            const date = new Date(today);
+            date.setDate(today.getDate() - (6 - index));
+
+            return {
+                dateKey: date.toDateString(),
+                label: date.toLocaleDateString(undefined, { weekday: 'short' }),
+                fullLabel: date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }),
+                count: countsByDate[date.toDateString()] || 0,
+                isToday: index === 6
+            };
+        });
+    }
+
     updateDisplay() {
         this.updateTodayCount();
         this.updateCoffeeList();
@@ -155,6 +178,7 @@ class CoffeeTracker {
         if (totalCups === 0) {
             document.getElementById('avgPerDay').textContent = '0';
             document.getElementById('favoriteType').textContent = '-';
+            this.updateWeeklyChart();
             return;
         }
 
@@ -172,6 +196,39 @@ class CoffeeTracker {
             typeCount[a] > typeCount[b] ? a : b
         );
         document.getElementById('favoriteType').textContent = favoriteType;
+        this.updateWeeklyChart();
+    }
+
+    updateWeeklyChart() {
+        const weeklyData = this.getLastSevenDaysData();
+        const chart = document.getElementById('weeklyChart');
+        const peak = document.getElementById('weeklyPeak');
+        const maxCount = Math.max(...weeklyData.map(day => day.count), 0);
+        const peakDays = weeklyData.filter(day => day.count === maxCount && maxCount > 0);
+
+        chart.innerHTML = weeklyData.map(day => {
+            const height = maxCount === 0
+                ? 8
+                : Math.max((day.count / maxCount) * 100, day.count > 0 ? 18 : 8);
+
+            return `
+                <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}">
+                    <span class="chart-value">${day.count}</span>
+                    <div class="chart-bar-track">
+                        <div class="chart-bar" style="height: ${height}%;" title="${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}"></div>
+                    </div>
+                    <span class="chart-label">${day.isToday ? 'Today' : day.label}</span>
+                </div>
+            `;
+        }).join('');
+
+        if (peakDays.length === 0) {
+            peak.textContent = 'No coffee logged in the last 7 days yet.';
+            return;
+        }
+
+        const peakLabels = peakDays.map(day => day.isToday ? 'Today' : day.label);
+        peak.textContent = `Peak day${peakLabels.length > 1 ? 's' : ''}: ${peakLabels.join(', ')} • ${maxCount} cup${maxCount === 1 ? '' : 's'}`;
     }
 
     formatTime(time24) {
