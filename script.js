@@ -203,19 +203,21 @@ class CoffeeTracker {
         const weeklyData = this.getLastSevenDaysData();
         const chart = document.getElementById('weeklyChart');
         const peak = document.getElementById('weeklyPeak');
+        const MIN_EMPTY_BAR_HEIGHT = 8;
+        const MIN_FILLED_BAR_HEIGHT = 18;
         const maxCount = Math.max(...weeklyData.map(day => day.count), 0);
         const peakDays = weeklyData.filter(day => day.count === maxCount && maxCount > 0);
 
         chart.innerHTML = weeklyData.map(day => {
             const height = maxCount === 0
-                ? 8
-                : Math.max((day.count / maxCount) * 100, day.count > 0 ? 18 : 8);
+                ? MIN_EMPTY_BAR_HEIGHT
+                : Math.max((day.count / maxCount) * 100, day.count > 0 ? MIN_FILLED_BAR_HEIGHT : MIN_EMPTY_BAR_HEIGHT);
 
             return `
-                <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}" aria-label="${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}">
+                <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}" role="img" aria-label="${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}">
                     <span class="chart-value">${day.count}</span>
                     <div class="chart-bar-track">
-                        <div class="chart-bar" style="height: ${height}%;" title="${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}"></div>
+                        <div class="chart-bar" style="height: ${height}%;"></div>
                     </div>
                     <span class="chart-label">${day.isToday ? 'Today' : day.label}</span>
                 </div>
