@@ -212,7 +212,7 @@ class CoffeeTracker {
                 : Math.max((day.count / maxCount) * 100, day.count > 0 ? 18 : 8);
 
             return `
-                <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}">
+                <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}" aria-label="${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}">
                     <span class="chart-value">${day.count}</span>
                     <div class="chart-bar-track">
                         <div class="chart-bar" style="height: ${height}%;" title="${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}"></div>
@@ -228,7 +228,7 @@ class CoffeeTracker {
         }
 
         const peakLabels = peakDays.map(day => day.isToday ? 'Today' : day.label);
-        peak.textContent = `Peak day${peakLabels.length > 1 ? 's' : ''}: ${peakLabels.join(', ')} • ${maxCount} cup${maxCount === 1 ? '' : 's'}`;
+        peak.textContent = `Peak day${peakLabels.length > 1 ? 's' : ''}: ${peakLabels.join(', ')} - ${maxCount} cup${maxCount === 1 ? '' : 's'}`;
     }
 
     formatTime(time24) {
