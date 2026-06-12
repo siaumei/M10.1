@@ -201,14 +201,28 @@ class CoffeeTracker {
 
     calculateBarHeight(count, maxCount) {
         // These percentage floors keep empty days visible and prevent very small non-zero values from disappearing.
-        const MIN_EMPTY_BAR_HEIGHT = 8;
-        const MIN_FILLED_BAR_HEIGHT = 18;
+        const MIN_EMPTY_BAR_HEIGHT_PERCENT = 8;
+        const MIN_FILLED_BAR_HEIGHT_PERCENT = 18;
 
         if (maxCount === 0) {
-            return MIN_EMPTY_BAR_HEIGHT;
+            return MIN_EMPTY_BAR_HEIGHT_PERCENT;
         }
 
-        return Math.max((count / maxCount) * 100, count > 0 ? MIN_FILLED_BAR_HEIGHT : MIN_EMPTY_BAR_HEIGHT);
+        return Math.max((count / maxCount) * 100, count > 0 ? MIN_FILLED_BAR_HEIGHT_PERCENT : MIN_EMPTY_BAR_HEIGHT_PERCENT);
+    }
+
+    getChartDayClassNames(day, maxCount) {
+        const classNames = ['chart-day'];
+
+        if (day.isToday) {
+            classNames.push('current-day');
+        }
+
+        if (day.count === maxCount && maxCount > 0) {
+            classNames.push('highest-day');
+        }
+
+        return classNames.join(' ');
     }
 
     updateWeeklyChart() {
@@ -222,7 +236,7 @@ class CoffeeTracker {
             const height = this.calculateBarHeight(day.count, maxCount);
 
             return `
-                <div class="chart-day ${day.isToday ? 'current-day' : ''} ${day.count === maxCount && maxCount > 0 ? 'highest-day' : ''}">
+                <div class="${this.getChartDayClassNames(day, maxCount)}">
                     <span class="sr-only">${day.fullLabel}: ${day.count} cup${day.count === 1 ? '' : 's'}</span>
                     <span class="chart-value">${day.count}</span>
                     <div class="chart-bar-track">
